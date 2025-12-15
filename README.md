@@ -1,4 +1,11 @@
-# SentinelStack
+<div align="center">
+
+<img src="docs/images/sentinelstack-icon.png" alt="SentinelStack Icon" width="120"/>
+
+<img src="docs/images/sentinelstack-text-logo.png" alt="SentinelStack" width="400"/>
+</div>
+
+#
 
 SentinelStack is an open-source, healthcare-ready cloud platform that provides system reliability monitoring, security controls, and immutable audit trails for regulated web applications.
 
