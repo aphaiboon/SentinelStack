@@ -1,21 +1,40 @@
-```mermaid
-flowchart LR
-    Client["Client & Admin UI<br/>(Web Dashboard,<br/>Admin & Reviewers)"]
+```
+**Architecture Diagram**
 
-    API["ASP.NET Core Web API (.NET 8)<br/><br/>Authentication<br/>Incident Management<br/>Audit Logging<br/>Service Registry"]
+The following ASCII diagram provides a high-level overview of SentinelStack's architecture:
 
-    Workers["Background Workers<br/><br/>Incident Evaluation<br/>Alerting<br/>Analytics / ML (Python)"]
+```
++-------------------------------+
+|    Client & Admin UI          |
+| (Web Dashboard, Admin, Review)|
++---------------+---------------+
+                |
+                v
++---------------+---------------+
+| ASP.NET Core Web API (.NET 8) |
+|  - Authentication             |
+|  - Incident Management        |
+|  - Audit Logging              |
+|  - Service Registry           |
++-------+-------+-------+-------+
+        |       |
+        v       v
++-------+   +---+------------------+
+|       |   |                      |
+|Background Workers                |
+| - Incident Evaluation           |
+| - Alerting                      |
+| - Analytics / ML (Python)       |
++-------+-------------------------+
+        |
+        v
++---------------------------------+
+|       PostgreSQL (RDS)          |
+|  Users, Services, Incidents,    |
+|  AuditLogs (append-only)        |
++---------------------------------+
 
-    DB[(PostgreSQL<br/>Users<br/>Services<br/>Incidents<br/>AuditLogs (append-only))]
-
-    Client --> API
-    API --> DB
-    API --> Workers
-    Workers --> DB
-
-    subgraph "AWS Cloud"
-        API
-        Workers
-        DB
-    end
+    All core components (API, Workers, DB) are deployed within the AWS Cloud.
+```
+For a graphical diagram, please consult the repository or compatible Markdown viewers that support Mermaid.
 ```
