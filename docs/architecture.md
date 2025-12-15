@@ -2,20 +2,20 @@
 
 ```mermaid
 flowchart LR
-    Client[Client & Admin UI\n(Web Dashboard,\nAdmin & Reviewers)]
+    Client["Client & Admin UI<br/>(Web Dashboard<br/>Admin & Reviewers)"]
 
-    API[ASP.NET Core Web API (.NET 8)\n\nAuthentication\nIncident Management\nAudit Logging\nService Registry]
+    API["ASP.NET Core Web API (.NET 8)<br/><br/>Authentication<br/>Incident Management<br/>Audit Logging<br/>Service Registry"]
 
-    Workers[Background Workers\n\nIncident Evaluation\nAlerting\nAnalytics / ML (Python)]
+    Workers["Background Workers<br/><br/>Incident Evaluation<br/>Alerting<br/>Analytics / ML (Python)"]
 
-    DB[(PostgreSQL (RDS)\n\nUsers\nServices\nIncidents\nAuditLogs (append-only))]
+    DB[("PostgreSQL (RDS)<br/><br/>Users<br/>Services<br/>Incidents<br/>AuditLogs (append-only)")]
 
     Client --> API
     API --> DB
     API --> Workers
     Workers --> DB
 
-    subgraph Cloud[AWS Cloud]
+    subgraph Cloud["AWS Cloud"]
         API
         Workers
         DB
