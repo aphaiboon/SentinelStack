@@ -1,40 +1,23 @@
-```
-**Architecture Diagram**
+# SentinelStack — High-Level Architecture
 
-The following ASCII diagram provides a high-level overview of SentinelStack's architecture:
+```mermaid
+flowchart LR
+    Client[Client & Admin UI\n(Web Dashboard,\nAdmin & Reviewers)]
 
-```
-+-------------------------------+
-|    Client & Admin UI          |
-| (Web Dashboard, Admin, Review)|
-+---------------+---------------+
-                |
-                v
-+---------------+---------------+
-| ASP.NET Core Web API (.NET 8) |
-|  - Authentication             |
-|  - Incident Management        |
-|  - Audit Logging              |
-|  - Service Registry           |
-+-------+-------+-------+-------+
-        |       |
-        v       v
-+-------+   +---+------------------+
-|       |   |                      |
-|Background Workers                |
-| - Incident Evaluation           |
-| - Alerting                      |
-| - Analytics / ML (Python)       |
-+-------+-------------------------+
-        |
-        v
-+---------------------------------+
-|       PostgreSQL (RDS)          |
-|  Users, Services, Incidents,    |
-|  AuditLogs (append-only)        |
-+---------------------------------+
+    API[ASP.NET Core Web API (.NET 8)\n\nAuthentication\nIncident Management\nAudit Logging\nService Registry]
 
-    All core components (API, Workers, DB) are deployed within the AWS Cloud.
-```
-For a graphical diagram, please consult the repository or compatible Markdown viewers that support Mermaid.
+    Workers[Background Workers\n\nIncident Evaluation\nAlerting\nAnalytics / ML (Python)]
+
+    DB[(PostgreSQL (RDS)\n\nUsers\nServices\nIncidents\nAuditLogs (append-only))]
+
+    Client --> API
+    API --> DB
+    API --> Workers
+    Workers --> DB
+
+    subgraph Cloud[AWS Cloud]
+        API
+        Workers
+        DB
+    end
 ```
