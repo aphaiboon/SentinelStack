@@ -4,6 +4,11 @@ SentinelStack is an open-source, healthcare-ready cloud platform that provides s
 
 It is designed for environments where downtime, data exposure, and undocumented decisions carry real risk, such as healthcare, life sciences, and enterprise SaaS.
 
+> **TL;DR**  
+> SentinelStack is an open-source, audit-first monitoring platform designed for regulated environments, prioritizing human accountability, system transparency, and compliance-ready observability.
+
+---
+
 ## Core Principles
 
 SentinelStack emphasizes:
@@ -12,6 +17,8 @@ SentinelStack emphasizes:
 - **Least-privilege access**
 - **Audit-first architecture**
 - **Operational accountability**
+
+---
 
 ## Why SentinelStack Exists
 
@@ -24,29 +31,30 @@ Healthcare systems struggle to answer basic but critical questions:
 
 SentinelStack exists to observe systems, detect issues early, record human decisions, and provide audit-ready visibility — without risky automation.
 
+---
+
 ## What SentinelStack Does
 
-- Monitors service health (latency, errors, uptime)
+- Observes service health and system reliability
 - Tracks incidents and response timelines
 - Records all actions in immutable audit logs
-- Enforces role-based access control
-- Provides operational and business insights
-- Supports ML-assisted anomaly detection (optional)
+- Enforces role-based access control (RBAC)
+- Provides operational visibility and insights
+- Supports optional ML-assisted anomaly detection
 
 > **⚠️ Important:** SentinelStack does not auto-remediate or act autonomously. Humans remain responsible at all times.
 
-## Architecture Overview
+---
 
-SentinelStack is built using a cloud-native, modular architecture on AWS.
+## Architecture
 
-### Core Components
+SentinelStack uses a modular, cloud-native architecture designed for auditability, scalability, and clear ownership of responsibility.
 
-- API Gateway
-- Backend services (ECS/EKS)
-- PostgreSQL (RDS)
-- Event-driven processing (SNS/SQS)
-- Infrastructure as Code (Terraform)
-- Secure IAM with least privilege
+- [High-Level Architecture](docs/architecture.md)
+- [Domain Model](docs/domain-model.md)
+- [Incident Lifecycle / Data Flow](docs/data-flow.md)
+
+---
 
 ## Security & Compliance Principles
 
@@ -56,9 +64,11 @@ SentinelStack is built using a cloud-native, modular architecture on AWS.
 - Explicit ownership of actions
 - No silent data modification
 
+---
+
 ## Demo Application
 
-SentinelStack includes **ClinicFlow**, a small demo healthcare app that simulates:
+SentinelStack includes **ClinicFlow**, a small demo healthcare application that simulates:
 
 - Patient registration (synthetic data only)
 - Appointment scheduling
@@ -66,11 +76,15 @@ SentinelStack includes **ClinicFlow**, a small demo healthcare app that simulate
 
 ClinicFlow exists solely to demonstrate how SentinelStack integrates with real applications.
 
+---
+
 ## Status
 
 - 🚧 **Actively developed**
 - 🧪 **Demo environment only**
 - ❗ **Not intended for production healthcare use**
+
+---
 
 ## Roadmap
 
@@ -78,4 +92,3 @@ ClinicFlow exists solely to demonstrate how SentinelStack integrates with real a
 - ML-assisted anomaly detection
 - Expanded compliance documentation
 - Multi-tenant support
-
