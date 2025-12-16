@@ -1,8 +1,7 @@
-<div align="center">
+<div align="left">
 
-<img src="docs/images/sentinelstack-icon.png" alt="SentinelStack Icon" width="120"/>
+<img src="docs/images/sentinelstack-white-bg.png" alt="SentinelStack Icon" width="500"/>
 
-<img src="docs/images/sentinelstack-text-logo.png" alt="SentinelStack" width="400"/>
 </div>
 
 #
