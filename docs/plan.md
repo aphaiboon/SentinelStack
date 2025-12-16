@@ -18,7 +18,7 @@ This plan is intentionally focused on **signal over scope**: demonstrating syste
 ## Technology Stack
 
 - **Language:** C#
-- **Framework:** .NET 8 / ASP.NET Core Web API
+- **Framework:** .NET 10 / ASP.NET Core Web API
 - **Database:** PostgreSQL
 - **ORM:** Entity Framework Core
 - **Cloud:** AWS

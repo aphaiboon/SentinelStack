@@ -4,7 +4,7 @@
 flowchart LR
     Client["Client & Admin UI<br/>(Web Dashboard<br/>Admin & Reviewers)"]
 
-    API["ASP.NET Core Web API (.NET 8)<br/><br/>Authentication<br/>Incident Management<br/>Audit Logging<br/>Service Registry"]
+    API["ASP.NET Core Web API (.NET 10)<br/><br/>Authentication<br/>Incident Management<br/>Audit Logging<br/>Service Registry"]
 
     Workers["Background Workers<br/><br/>Incident Evaluation<br/>Alerting<br/>Analytics / ML (Python)"]
 
