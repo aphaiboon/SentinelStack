@@ -1,7 +1,5 @@
-using System;
-
 namespace SentinelStack.Domain.Entities;
-{
+
     /// <summary>
     /// Represents a real operational incident in the system, not a synthetic alert.
     /// Tracks status and changes for healthcare-compliant audit trails.
@@ -64,7 +62,6 @@ namespace SentinelStack.Domain.Entities;
     /// <param name="title">The title of the incident.</param>
     /// <param name="description">The description of the incident.</param>
     /// <param name="severity">The severity of the incident.</param>
-    /// <param name="status">The initial status of the incident.</param>
     public Incident(string title, string description, string severity)
     {
         Id = Guid.NewGuid();
@@ -123,5 +120,4 @@ namespace SentinelStack.Domain.Entities;
         DeletedAtUtc = DateTime.UtcNow;
         UpdatedAtUtc = DateTime.UtcNow;
     }
-}
 }
