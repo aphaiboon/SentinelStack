@@ -3,8 +3,14 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/sentinelstack-darkmode-logo.png">
   <source media="(prefers-color-scheme: light)" srcset="docs/images/sentinelstack-white-bg.png">
-  <img src="docs/images/sentinelstack-white-bg.png" alt="SentinelStack" width="500"/>
+  <img src="docs/images/sentinelstack-white-bg.png" alt="SentinelStack" width="300"/>
 </picture>
+
+<br/>
+
+<a href="https://github.com/aphaiboon/sentinelstack">
+  <img src="https://img.shields.io/badge/status-under__development-orange?style=for-the-badge&logo=github" alt="Under Development Badge"/>
+</a>
 
 </div>
 
