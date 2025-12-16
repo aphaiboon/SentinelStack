@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "H1uh8nsYqBLPkZ3grcNazxJNuvG3FMPilbF7aAoHIs0=",
+  "Source": "SentinelStack.Api",
+  "BasePath": "_content/SentinelStack.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
