@@ -9,7 +9,7 @@
 <br/>
 
 <a href="https://github.com/aphaiboon/sentinelstack">
-  <img src="https://img.shields.io/badge/status-under__development-orange?style=for-the-badge&logo=github" alt="Under Development Badge"/>
+  <img src="https://img.shields.io/badge/status-under%20development-orange?style=for-the-badge&logo=github" alt="Under Development Badge"/>
 </a>
 
 </div>
