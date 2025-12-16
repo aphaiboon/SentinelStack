@@ -1,6 +1,10 @@
-<div align="left">
+<div align="center">
 
-<img src="docs/images/sentinelstack-white-bg.png" alt="SentinelStack Icon" width="500"/>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/sentinelstack-darkmode-logo.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/images/sentinelstack-white-bg.png">
+  <img src="docs/images/sentinelstack-white-bg.png" alt="SentinelStack" width="500"/>
+</picture>
 
 </div>
 
