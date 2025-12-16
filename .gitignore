@@ -1,6 +1,14 @@
 ## .NET
-bin/
-obj/
+src/SentinelStack.Api/bin/
+src/SentinelStack.Api/obj/
+src/SentinelStack.Application/bin/
+src/SentinelStack.Application/obj/
+src/SentinelStack.Domain/bin/
+src/SentinelStack.Domain/obj/
+src/SentinelStack.Infrastructure/bin/
+src/SentinelStack.Infrastructure/obj/
+
+## User-specific files
 *.user
 *.suo
 *.cache
