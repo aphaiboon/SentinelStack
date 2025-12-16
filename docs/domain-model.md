@@ -20,10 +20,15 @@ erDiagram
 
     INCIDENT {
         uuid id
-        string status
+        string title
+        string description
         string severity
-        datetime created_at
+        string status
+        datetime created_at        
         datetime resolved_at
+        datetime updated_at
+        datetime deleted_at
+        datetime archived_at
     }
 
     AUDIT_LOG {
