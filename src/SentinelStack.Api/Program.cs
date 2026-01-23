@@ -15,6 +15,7 @@ using SentinelStack.Application.Users.Commands;
 using SentinelStack.Application.Users.Queries;
 using SentinelStack.Application.Services.Commands;
 using SentinelStack.Application.Services.Queries;
+using SentinelStack.Application.AuditLogs.Queries;
 using SentinelStack.Infrastructure.Auth;
 using SentinelStack.Infrastructure.Data;
 using SentinelStack.Infrastructure.Repositories;
@@ -105,7 +106,11 @@ try
     builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
     builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
+    builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
     builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
+
+    // Audit Service
+    builder.Services.AddScoped<IAuditService, AuditService>();
 
     // Incident Commands & Queries
     builder.Services.AddScoped<CreateIncidentCommand>();
@@ -126,6 +131,10 @@ try
     builder.Services.AddScoped<UpdateServiceCommand>();
     builder.Services.AddScoped<GetServiceQuery>();
     builder.Services.AddScoped<GetServicesQuery>();
+
+    // Audit Log Queries (read-only - audit logs are immutable)
+    builder.Services.AddScoped<GetAuditLogQuery>();
+    builder.Services.AddScoped<GetAuditLogsQuery>();
 
     // Health Checks
     builder.Services.AddHealthChecks()
