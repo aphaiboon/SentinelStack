@@ -67,6 +67,12 @@ artifacts/
 ## Personal notes (NEVER commit)
 .notes/
 
+## Environment files (NEVER commit secrets)
+.env
+.env.local
+.env.*.local
+!.env.example
+
 ## AI Development Tools (NEVER commit)
 .claude/
 .cursor/
