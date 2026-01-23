@@ -11,6 +11,8 @@ using SentinelStack.Application.Auth.Interfaces;
 using SentinelStack.Application.Common.Interfaces;
 using SentinelStack.Application.Incidents.Commands;
 using SentinelStack.Application.Incidents.Queries;
+using SentinelStack.Application.Users.Commands;
+using SentinelStack.Application.Users.Queries;
 using SentinelStack.Infrastructure.Auth;
 using SentinelStack.Infrastructure.Data;
 using SentinelStack.Infrastructure.Repositories;
@@ -110,6 +112,12 @@ try
     builder.Services.AddScoped<ResolveIncidentCommand>();
     builder.Services.AddScoped<GetIncidentQuery>();
     builder.Services.AddScoped<GetIncidentsQuery>();
+
+    // User Commands & Queries
+    builder.Services.AddScoped<CreateUserCommand>();
+    builder.Services.AddScoped<UpdateUserCommand>();
+    builder.Services.AddScoped<GetUserQuery>();
+    builder.Services.AddScoped<GetUsersQuery>();
 
     // Health Checks
     builder.Services.AddHealthChecks()
