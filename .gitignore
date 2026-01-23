@@ -66,3 +66,10 @@ artifacts/
 
 ## Personal notes (NEVER commit)
 .notes/
+
+## AI Development Tools (NEVER commit)
+.claude/
+.cursor/
+_bmad/
+_bmad-output/
+.mcp.json

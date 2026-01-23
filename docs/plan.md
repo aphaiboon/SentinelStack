@@ -58,7 +58,7 @@ This plan is intentionally focused on **signal over scope**: demonstrating syste
 
 ---
 
-### Day 2 — Project Scaffolding
+### Day 2 — Project Scaffolding (Completed)
 
 **Objectives**
 - Create a stable project skeleton
@@ -85,7 +85,7 @@ This plan is intentionally focused on **signal over scope**: demonstrating syste
 - Align code with documented domain model
 
 **Tasks**
-- Implement Incident entity
+- Implement Incident entity 
 - Implement AuditLog entity (append-only)
 - Implement Service entity (minimal)
 - Implement User entity (minimal)
