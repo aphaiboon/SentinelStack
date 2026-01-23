@@ -125,6 +125,11 @@ try
     // Audit Service
     builder.Services.AddScoped<IAuditService, AuditService>();
 
+    // Email Settings & Services
+    builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+    builder.Services.AddScoped<IEmailService, EmailService>();
+    builder.Services.AddScoped<INotificationService, NotificationService>();
+
     // Incident Commands & Queries
     builder.Services.AddScoped<CreateIncidentCommand>();
     builder.Services.AddScoped<UpdateIncidentCommand>();
