@@ -63,6 +63,9 @@ artifacts/
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl
+*.tfvars.local
+crash.log
+crash.*.log
 
 ## Personal notes (NEVER commit)
 .notes/
