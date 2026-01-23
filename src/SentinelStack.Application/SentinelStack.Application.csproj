@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SentinelStack.Domain\SentinelStack.Domain.csproj" />
-    <ProjectReference Include="..\SentinelStack.Infrastructure\SentinelStack.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
