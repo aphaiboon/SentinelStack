@@ -134,7 +134,7 @@ public class ServicesControllerTests : BaseIntegrationTest
         });
 
         // Act
-        var response = await Client.GetAsync($"/api/v1/services/key/{serviceKey}");
+        var response = await Client.GetAsync($"/api/v1/services/by-key/{serviceKey}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);

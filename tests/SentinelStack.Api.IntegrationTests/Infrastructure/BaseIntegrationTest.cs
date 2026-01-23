@@ -18,7 +18,7 @@ namespace SentinelStack.Api.IntegrationTests.Infrastructure;
 public abstract class BaseIntegrationTest : IAsyncLifetime
 {
     protected readonly CustomWebApplicationFactory Factory;
-    protected readonly HttpClient Client;
+    protected HttpClient Client { get; private set; } = null!;
     protected readonly JsonSerializerOptions JsonOptions;
 
     protected Guid TestTenantId { get; private set; }
@@ -28,7 +28,8 @@ public abstract class BaseIntegrationTest : IAsyncLifetime
     protected BaseIntegrationTest(CustomWebApplicationFactory factory)
     {
         Factory = factory;
-        Client = factory.CreateClient();
+        // Don't create client here - wait until InitializeAsync
+        // when the PostgreSQL container is ready
         JsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
@@ -37,6 +38,10 @@ public abstract class BaseIntegrationTest : IAsyncLifetime
 
     public virtual async Task InitializeAsync()
     {
+        // Create the client now that the container is ready
+        // (ICollectionFixture's InitializeAsync runs before test class InitializeAsync)
+        Client = Factory.CreateClient();
+
         // Create a unique test user for this test run
         TestTenantId = Guid.NewGuid();
         TestUserEmail = $"test_{Guid.NewGuid():N}@sentinelstack.io";

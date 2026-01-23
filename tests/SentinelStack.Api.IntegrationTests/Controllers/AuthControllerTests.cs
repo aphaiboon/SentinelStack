@@ -15,7 +15,7 @@ namespace SentinelStack.Api.IntegrationTests.Controllers;
 public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>, IAsyncLifetime
 {
     private readonly CustomWebApplicationFactory _factory;
-    private readonly HttpClient _client;
+    private HttpClient _client = null!;
     private Guid _testTenantId;
     private Guid _testUserId;
     private string _testEmail = null!;
@@ -24,11 +24,14 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>, I
     public AuthControllerTests(CustomWebApplicationFactory factory)
     {
         _factory = factory;
-        _client = factory.CreateClient();
+        // Don't create client here - wait until InitializeAsync
     }
 
     public async Task InitializeAsync()
     {
+        // Create client now that the container is ready
+        _client = _factory.CreateClient();
+
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();

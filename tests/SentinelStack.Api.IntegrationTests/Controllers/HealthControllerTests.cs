@@ -5,14 +5,23 @@ using SentinelStack.Api.IntegrationTests.Infrastructure;
 namespace SentinelStack.Api.IntegrationTests.Controllers;
 
 [Collection("Integration")]
-public class HealthControllerTests : IClassFixture<CustomWebApplicationFactory>
+public class HealthControllerTests : IAsyncLifetime
 {
-    private readonly HttpClient _client;
+    private readonly CustomWebApplicationFactory _factory;
+    private HttpClient _client = null!;
 
     public HealthControllerTests(CustomWebApplicationFactory factory)
     {
-        _client = factory.CreateClient();
+        _factory = factory;
     }
+
+    public Task InitializeAsync()
+    {
+        _client = _factory.CreateClient();
+        return Task.CompletedTask;
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
     public async Task Health_ReturnsHealthy_WhenDatabaseIsAvailable()

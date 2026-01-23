@@ -136,7 +136,9 @@ public class UsersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserDto>> GetCurrentUser(CancellationToken cancellationToken)
     {
-        var userIdClaim = User.FindFirst("sub")?.Value;
+        // Try standard JWT claim first, then fall back to mapped claim type
+        var userIdClaim = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value
+                          ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
         if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
         {

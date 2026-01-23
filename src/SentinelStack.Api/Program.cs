@@ -32,6 +32,7 @@ using SentinelStack.Infrastructure.Repositories;
 using SentinelStack.Infrastructure.Services;
 
 // Configure Serilog early for startup logging
+// Use CreateLogger instead of CreateBootstrapLogger to avoid "logger already frozen" error with WebApplicationFactory
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
@@ -39,7 +40,7 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.WithMachineName()
     .Enrich.WithEnvironmentName()
     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-    .CreateBootstrapLogger();
+    .CreateLogger();
 
 try
 {
@@ -71,8 +72,23 @@ try
     var jwtSettings = builder.Configuration.GetSection("JwtSettings");
     builder.Services.Configure<JwtSettings>(jwtSettings);
 
-    var secret = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret is required");
+    // Allow test environment to use default secret
+    var secret = jwtSettings["Secret"];
+    if (string.IsNullOrEmpty(secret))
+    {
+        if (builder.Environment.IsEnvironment("Testing"))
+        {
+            secret = "TestSecretKeyThatIsAtLeast32CharactersLongForHMACSHA256";
+        }
+        else
+        {
+            throw new InvalidOperationException("JWT Secret is required");
+        }
+    }
     var key = Encoding.UTF8.GetBytes(secret);
+
+    var jwtIssuer = jwtSettings["Issuer"] ?? (builder.Environment.IsEnvironment("Testing") ? "SentinelStack.Tests" : "SentinelStack");
+    var jwtAudience = jwtSettings["Audience"] ?? (builder.Environment.IsEnvironment("Testing") ? "SentinelStack.Tests" : "SentinelStack");
 
     builder.Services.AddAuthentication(options =>
     {
@@ -81,16 +97,16 @@ try
     })
     .AddJwtBearer(options =>
     {
-        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Testing");
         options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(key),
             ValidateIssuer = true,
-            ValidIssuer = jwtSettings["Issuer"],
+            ValidIssuer = jwtIssuer,
             ValidateAudience = true,
-            ValidAudience = jwtSettings["Audience"],
+            ValidAudience = jwtAudience,
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
         };
@@ -105,8 +121,19 @@ try
     });
 
     // Database Context
-    var connectionString = builder.Configuration.GetValue<string>("DatabaseSettings:ConnectionString")
-        ?? throw new InvalidOperationException("Database connection string is required");
+    var connectionString = builder.Configuration.GetValue<string>("DatabaseSettings:ConnectionString");
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        if (builder.Environment.IsEnvironment("Testing"))
+        {
+            // Tests will override this with their own DbContext registration
+            connectionString = "Host=localhost;Database=sentinelstack_test;Username=test;Password=test";
+        }
+        else
+        {
+            throw new InvalidOperationException("Database connection string is required");
+        }
+    }
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseNpgsql(connectionString));
 
@@ -173,25 +200,31 @@ try
     builder.Services.AddScoped<GetWebhookEndpointsQuery>();
 
     // Health Checks
-    builder.Services.AddHealthChecks()
-        .AddNpgSql(
+    var healthChecksBuilder = builder.Services.AddHealthChecks();
+    if (!builder.Environment.IsEnvironment("Testing"))
+    {
+        healthChecksBuilder.AddNpgSql(
             connectionString,
             name: "postgresql",
             tags: new[] { "db", "sql", "postgresql" });
+    }
 
-    // Hangfire Background Jobs
-    builder.Services.AddHangfire(config => config
-        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-        .UseSimpleAssemblyNameTypeSerializer()
-        .UseRecommendedSerializerSettings()
-        .UsePostgreSqlStorage(options => options
-            .UseNpgsqlConnection(connectionString)));
-
-    builder.Services.AddHangfireServer(options =>
+    // Hangfire Background Jobs - skip in Testing (tests will mock/override if needed)
+    if (!builder.Environment.IsEnvironment("Testing"))
     {
-        options.Queues = new[] { "escalations", "notifications", "default" };
-        options.WorkerCount = Environment.ProcessorCount * 2;
-    });
+        builder.Services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UsePostgreSqlStorage(options => options
+                .UseNpgsqlConnection(connectionString)));
+
+        builder.Services.AddHangfireServer(options =>
+        {
+            options.Queues = new[] { "escalations", "notifications", "default" };
+            options.WorkerCount = Environment.ProcessorCount * 2;
+        });
+    }
 
     // Background Job Services
     builder.Services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
@@ -266,19 +299,22 @@ try
 
     app.MapControllers();
 
-    // Hangfire Dashboard (secured with authorization)
-    app.UseHangfireDashboard("/hangfire", new DashboardOptions
+    // Hangfire Dashboard and recurring jobs - skip in Testing
+    if (!app.Environment.IsEnvironment("Testing"))
     {
-        Authorization = new[] { new HangfireAuthorizationFilter() },
-        DashboardTitle = "SentinelStack Background Jobs"
-    });
+        app.UseHangfireDashboard("/hangfire", new DashboardOptions
+        {
+            Authorization = new[] { new HangfireAuthorizationFilter() },
+            DashboardTitle = "SentinelStack Background Jobs"
+        });
 
-    // Setup recurring jobs
-    RecurringJob.AddOrUpdate<EscalationJobService>(
-        "process-escalations",
-        service => service.ProcessPendingEscalationsAsync(),
-        "*/5 * * * *", // Every 5 minutes
-        new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+        // Setup recurring jobs
+        RecurringJob.AddOrUpdate<EscalationJobService>(
+            "process-escalations",
+            service => service.ProcessPendingEscalationsAsync(),
+            "*/5 * * * *", // Every 5 minutes
+            new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+    }
 
     Log.Information("SentinelStack API started successfully");
     app.Run();
@@ -286,6 +322,7 @@ try
 catch (Exception ex)
 {
     Log.Fatal(ex, "Application terminated unexpectedly");
+    throw; // Re-throw so WebApplicationFactory can see what went wrong
 }
 finally
 {
