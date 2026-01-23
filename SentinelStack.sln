@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SentinelStack.Domain.UnitTests", "tests\SentinelStack.Domain.UnitTests\SentinelStack.Domain.UnitTests.csproj", "{F49D586D-E570-4C64-B1B1-D557765CF104}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SentinelStack.Api.IntegrationTests", "tests\SentinelStack.Api.IntegrationTests\SentinelStack.Api.IntegrationTests.csproj", "{31A950D2-3235-40D5-BDD0-5EC4C56DD1B3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,18 @@ Global
 		{F49D586D-E570-4C64-B1B1-D557765CF104}.Release|x64.Build.0 = Release|Any CPU
 		{F49D586D-E570-4C64-B1B1-D557765CF104}.Release|x86.ActiveCfg = Release|Any CPU
 		{F49D586D-E570-4C64-B1B1-D557765CF104}.Release|x86.Build.0 = Release|Any CPU
+		{31A950D2-3235-40D5-BDD0-5EC4C56DD1B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31A950D2-3235-40D5-BDD0-5EC4C56DD1B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31A950D2-3235-40D5-BDD0-5EC4C56DD1B3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{31A950D2-3235-40D5-BDD0-5EC4C56DD1B3}.Debug|x64.Build.0 = Debug|Any CPU
+		{31A950D2-3235-40D5-BDD0-5EC4C56DD1B3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{31A950D2-3235-40D5-BDD0-5EC4C56DD1B3}.Debug|x86.Build.0 = Debug|Any CPU
+		{31A950D2-3235-40D5-BDD0-5EC4C56DD1B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31A950D2-3235-40D5-BDD0-5EC4C56DD1B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31A950D2-3235-40D5-BDD0-5EC4C56DD1B3}.Release|x64.ActiveCfg = Release|Any CPU
+		{31A950D2-3235-40D5-BDD0-5EC4C56DD1B3}.Release|x64.Build.0 = Release|Any CPU
+		{31A950D2-3235-40D5-BDD0-5EC4C56DD1B3}.Release|x86.ActiveCfg = Release|Any CPU
+		{31A950D2-3235-40D5-BDD0-5EC4C56DD1B3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,5 +111,6 @@ Global
 		{8296B9AD-5D21-4D0E-A147-3A2FA7061C6B} = {A75C0B73-4260-4783-9E6F-ECF5F7FC6492}
 		{14E751E2-6F98-49FB-9490-F1159D4873A0} = {A75C0B73-4260-4783-9E6F-ECF5F7FC6492}
 		{F49D586D-E570-4C64-B1B1-D557765CF104} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{31A950D2-3235-40D5-BDD0-5EC4C56DD1B3} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal
