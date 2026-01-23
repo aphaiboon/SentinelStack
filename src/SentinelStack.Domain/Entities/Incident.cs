@@ -1,123 +1,190 @@
+using SentinelStack.Domain.Common;
+using SentinelStack.Domain.Enums;
+
 namespace SentinelStack.Domain.Entities;
 
-    /// <summary>
-    /// Represents a real operational incident in the system, not a synthetic alert.
-    /// Tracks status and changes for healthcare-compliant audit trails.
-    /// </summary>
-    public class Incident
+/// <summary>
+/// Represents a real operational incident in the system.
+/// Tracks status and changes for healthcare-compliant audit trails.
+/// </summary>
+public class Incident : AuditableEntity, ITenantEntity
 {
     /// <summary>
-    /// Unique identifier for the incident.
+    /// The tenant this incident belongs to.
     /// </summary>
-    public Guid Id { get; private set; }
+    public Guid TenantId { get; private set; }
 
     /// <summary>
     /// Title of the incident.
     /// </summary>
-    public string Title { get; private set; }
+    public string Title { get; private set; } = string.Empty;
 
     /// <summary>
     /// Detailed description of the incident.
     /// </summary>
-    public string Description { get; private set; }
+    public string Description { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Severity level (e.g., "critical", "major", "minor") of the incident.
+    /// Severity level of the incident.
     /// </summary>
-    public string Severity { get; private set; }
+    public IncidentSeverity Severity { get; private set; }
 
     /// <summary>
-    /// Current status of the incident (e.g., "open", "in_progress", "resolved").
+    /// Current status of the incident.
     /// </summary>
-    public string Status { get; private set; }
+    public IncidentStatus Status { get; private set; }
 
     /// <summary>
-    /// UTC timestamp for when the incident was created.
+    /// The service affected by this incident.
     /// </summary>
-    public DateTime CreatedAtUtc { get; private set; }
+    public Guid? ServiceId { get; private set; }
 
     /// <summary>
-    /// UTC timestamp for when the incident was resolved. Defaults to DateTime.MinValue.
+    /// The user who acknowledged this incident.
+    /// </summary>
+    public Guid? AcknowledgedBy { get; private set; }
+
+    /// <summary>
+    /// UTC timestamp when the incident was acknowledged.
+    /// </summary>
+    public DateTime? AcknowledgedAtUtc { get; private set; }
+
+    /// <summary>
+    /// UTC timestamp when the incident was resolved.
     /// </summary>
     public DateTime? ResolvedAtUtc { get; private set; }
 
     /// <summary>
-    /// UTC timestamp for when the incident was last updated.
+    /// The user who resolved this incident.
     /// </summary>
-    public DateTime? UpdatedAtUtc { get; private set; }
+    public Guid? ResolvedBy { get; private set; }
 
     /// <summary>
-    /// UTC timestamp for when the incident was soft-deleted.
-    /// </summary>
-    public DateTime? DeletedAtUtc { get; private set; }
-
-    /// <summary>
-    /// UTC timestamp for when the incident was archived.
+    /// UTC timestamp when the incident was archived.
     /// </summary>
     public DateTime? ArchivedAtUtc { get; private set; }
 
     /// <summary>
-    /// Public constructor for creating a new incident instance.
+    /// UTC timestamp when the incident was soft-deleted.
     /// </summary>
-    /// <param name="title">The title of the incident.</param>
-    /// <param name="description">The description of the incident.</param>
-    /// <param name="severity">The severity of the incident.</param>
-    public Incident(string title, string description, string severity)
+    public DateTime? DeletedAtUtc { get; private set; }
+
+    /// <summary>
+    /// Private constructor for EF Core.
+    /// </summary>
+    private Incident() { }
+
+    /// <summary>
+    /// Creates a new incident.
+    /// </summary>
+    public Incident(
+        Guid tenantId,
+        string title,
+        string description,
+        IncidentSeverity severity,
+        Guid? serviceId = null)
     {
-        Id = Guid.NewGuid();
+        TenantId = tenantId;
         Title = title;
         Description = description;
         Severity = severity;
-        Status = "Open";
-        CreatedAtUtc = DateTime.UtcNow;
-        ResolvedAtUtc = DateTime.MinValue;
+        ServiceId = serviceId;
+        Status = IncidentStatus.Open;
     }
 
     /// <summary>
-    /// Updates the status of the incident, setting the updated timestamp accordingly.
+    /// Acknowledges the incident.
     /// </summary>
-    /// <param name="status">The new status of the incident.</param>
-    public void UpdateStatus(string status)
+    public void Acknowledge(Guid userId)
     {
-        Status = status;
-        UpdatedAtUtc = DateTime.UtcNow;
+        if (Status != IncidentStatus.Open)
+        {
+            return;
+        }
+
+        Status = IncidentStatus.Acknowledged;
+        AcknowledgedBy = userId;
+        AcknowledgedAtUtc = DateTime.UtcNow;
+        SetUpdatedBy(userId);
     }
 
     /// <summary>
-    /// Updates the description of the incident, setting the updated timestamp accordingly.
+    /// Starts investigation of the incident.
     /// </summary>
-    /// <param name="description">The new description of the incident.</param>
-    public void UpdateDescription(string description)
+    public void StartInvestigation(Guid userId)
+    {
+        if (Status != IncidentStatus.Acknowledged)
+        {
+            return;
+        }
+
+        Status = IncidentStatus.Investigating;
+        SetUpdatedBy(userId);
+    }
+
+    /// <summary>
+    /// Resolves the incident.
+    /// </summary>
+    public void Resolve(Guid userId)
+    {
+        if (Status == IncidentStatus.Resolved || Status == IncidentStatus.Closed)
+        {
+            return;
+        }
+
+        Status = IncidentStatus.Resolved;
+        ResolvedBy = userId;
+        ResolvedAtUtc = DateTime.UtcNow;
+        SetUpdatedBy(userId);
+    }
+
+    /// <summary>
+    /// Closes the incident after resolution.
+    /// </summary>
+    public void Close(Guid userId)
+    {
+        if (Status != IncidentStatus.Resolved)
+        {
+            return;
+        }
+
+        Status = IncidentStatus.Closed;
+        SetUpdatedBy(userId);
+    }
+
+    /// <summary>
+    /// Updates the incident description.
+    /// </summary>
+    public void UpdateDescription(string description, Guid userId)
     {
         Description = description;
-        UpdatedAtUtc = DateTime.UtcNow;
+        SetUpdatedBy(userId);
     }
 
     /// <summary>
-    /// Marks the incident as resolved and sets the resolved UTC timestamp.
+    /// Updates the incident severity.
     /// </summary>
-    public void Resolve()
+    public void UpdateSeverity(IncidentSeverity severity, Guid userId)
     {
-        Status = "resolved";
-        ResolvedAtUtc = DateTime.UtcNow;
-        UpdatedAtUtc = DateTime.UtcNow;
+        Severity = severity;
+        SetUpdatedBy(userId);
     }
 
     /// <summary>
-    /// Marks the incident as archived and sets the archived UTC timestamp.
+    /// Archives the incident.
     /// </summary>
-    public void Archive()
+    public void Archive(Guid userId)
     {
         ArchivedAtUtc = DateTime.UtcNow;
-        UpdatedAtUtc = DateTime.UtcNow;
+        SetUpdatedBy(userId);
     }
 
     /// <summary>
-    /// Marks the incident as deleted and sets the deleted UTC timestamp.
+    /// Soft-deletes the incident.
     /// </summary>
-    public void Delete()
+    public void Delete(Guid userId)
     {
         DeletedAtUtc = DateTime.UtcNow;
-        UpdatedAtUtc = DateTime.UtcNow;
+        SetUpdatedBy(userId);
     }
 }
