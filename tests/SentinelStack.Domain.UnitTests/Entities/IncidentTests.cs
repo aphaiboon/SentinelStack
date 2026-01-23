@@ -17,8 +17,8 @@ public class IncidentTests
         var incident = new Incident(
             _tenantId,
             "Test Incident",
-            "Test Description",
-            IncidentSeverity.Medium);
+            IncidentSeverity.Medium,
+            "Test Description");
 
         // Assert
         incident.Status.Should().Be(IncidentStatus.Open);
@@ -218,8 +218,8 @@ public class IncidentTests
         return new Incident(
             _tenantId,
             "Test Incident",
-            "Test Description",
-            IncidentSeverity.Medium);
+            IncidentSeverity.Medium,
+            "Test Description");
     }
 
     private Incident CreateAcknowledgedIncident()
