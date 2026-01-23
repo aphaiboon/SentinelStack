@@ -16,6 +16,8 @@ using SentinelStack.Application.Users.Queries;
 using SentinelStack.Application.Services.Commands;
 using SentinelStack.Application.Services.Queries;
 using SentinelStack.Application.AuditLogs.Queries;
+using SentinelStack.Application.Escalations.Commands;
+using SentinelStack.Application.Escalations.Queries;
 using SentinelStack.Infrastructure.Auth;
 using SentinelStack.Infrastructure.Data;
 using SentinelStack.Infrastructure.Repositories;
@@ -107,6 +109,7 @@ try
     builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
     builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+    builder.Services.AddScoped<IEscalationPolicyRepository, EscalationPolicyRepository>();
     builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
 
     // Audit Service
@@ -135,6 +138,12 @@ try
     // Audit Log Queries (read-only - audit logs are immutable)
     builder.Services.AddScoped<GetAuditLogQuery>();
     builder.Services.AddScoped<GetAuditLogsQuery>();
+
+    // Escalation Policy Commands & Queries
+    builder.Services.AddScoped<CreateEscalationPolicyCommand>();
+    builder.Services.AddScoped<UpdateEscalationPolicyCommand>();
+    builder.Services.AddScoped<GetEscalationPolicyQuery>();
+    builder.Services.AddScoped<GetEscalationPoliciesQuery>();
 
     // Health Checks
     builder.Services.AddHealthChecks()

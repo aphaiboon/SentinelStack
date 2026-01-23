@@ -35,6 +35,8 @@ public class AppDbContext : DbContext, IUnitOfWork
     public DbSet<User> Users => Set<User>();
     public DbSet<Service> Services => Set<Service>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<EscalationPolicy> EscalationPolicies => Set<EscalationPolicy>();
+    public DbSet<EscalationStep> EscalationSteps => Set<EscalationStep>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
