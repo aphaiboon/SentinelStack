@@ -37,6 +37,7 @@ public class AppDbContext : DbContext, IUnitOfWork
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<EscalationPolicy> EscalationPolicies => Set<EscalationPolicy>();
     public DbSet<EscalationStep> EscalationSteps => Set<EscalationStep>();
+    public DbSet<WebhookEndpoint> WebhookEndpoints => Set<WebhookEndpoint>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

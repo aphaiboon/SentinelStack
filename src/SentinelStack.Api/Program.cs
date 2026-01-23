@@ -18,6 +18,9 @@ using SentinelStack.Application.Services.Queries;
 using SentinelStack.Application.AuditLogs.Queries;
 using SentinelStack.Application.Escalations.Commands;
 using SentinelStack.Application.Escalations.Queries;
+using SentinelStack.Application.Webhooks.Commands;
+using SentinelStack.Application.Webhooks.Queries;
+using SentinelStack.Application.Common.Settings;
 using SentinelStack.Infrastructure.Auth;
 using SentinelStack.Infrastructure.Data;
 using SentinelStack.Infrastructure.Repositories;
@@ -90,6 +93,12 @@ try
 
     builder.Services.AddAuthorization();
 
+    // Application Settings
+    builder.Services.Configure<ApplicationSettings>(options =>
+    {
+        options.BaseUrl = builder.Configuration["Application:BaseUrl"] ?? "https://api.sentinelstack.io";
+    });
+
     // Database Context
     var connectionString = builder.Configuration.GetValue<string>("DatabaseSettings:ConnectionString")
         ?? throw new InvalidOperationException("Database connection string is required");
@@ -110,6 +119,7 @@ try
     builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
     builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
     builder.Services.AddScoped<IEscalationPolicyRepository, EscalationPolicyRepository>();
+    builder.Services.AddScoped<IWebhookEndpointRepository, WebhookEndpointRepository>();
     builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
 
     // Audit Service
@@ -144,6 +154,13 @@ try
     builder.Services.AddScoped<UpdateEscalationPolicyCommand>();
     builder.Services.AddScoped<GetEscalationPolicyQuery>();
     builder.Services.AddScoped<GetEscalationPoliciesQuery>();
+
+    // Webhook Commands & Queries
+    builder.Services.AddScoped<CreateWebhookEndpointCommand>();
+    builder.Services.AddScoped<UpdateWebhookEndpointCommand>();
+    builder.Services.AddScoped<ProcessWebhookCommand>();
+    builder.Services.AddScoped<GetWebhookEndpointQuery>();
+    builder.Services.AddScoped<GetWebhookEndpointsQuery>();
 
     // Health Checks
     builder.Services.AddHealthChecks()
