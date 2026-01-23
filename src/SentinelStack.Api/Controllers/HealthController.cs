@@ -1,10 +1,12 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace SentinelStack.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/health")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class HealthController : ControllerBase
 {
     [HttpGet]
