@@ -21,7 +21,12 @@ using SentinelStack.Application.Escalations.Queries;
 using SentinelStack.Application.Webhooks.Commands;
 using SentinelStack.Application.Webhooks.Queries;
 using SentinelStack.Application.Common.Settings;
+using Hangfire;
+using Hangfire.Dashboard;
+using Hangfire.PostgreSql;
+using SentinelStack.Api.Infrastructure;
 using SentinelStack.Infrastructure.Auth;
+using SentinelStack.Infrastructure.BackgroundJobs;
 using SentinelStack.Infrastructure.Data;
 using SentinelStack.Infrastructure.Repositories;
 using SentinelStack.Infrastructure.Services;
@@ -174,6 +179,24 @@ try
             name: "postgresql",
             tags: new[] { "db", "sql", "postgresql" });
 
+    // Hangfire Background Jobs
+    builder.Services.AddHangfire(config => config
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UsePostgreSqlStorage(options => options
+            .UseNpgsqlConnection(connectionString)));
+
+    builder.Services.AddHangfireServer(options =>
+    {
+        options.Queues = new[] { "escalations", "notifications", "default" };
+        options.WorkerCount = Environment.ProcessorCount * 2;
+    });
+
+    // Background Job Services
+    builder.Services.AddScoped<IBackgroundJobService, HangfireBackgroundJobService>();
+    builder.Services.AddScoped<EscalationJobService>();
+
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(c =>
@@ -242,6 +265,20 @@ try
     });
 
     app.MapControllers();
+
+    // Hangfire Dashboard (secured with authorization)
+    app.UseHangfireDashboard("/hangfire", new DashboardOptions
+    {
+        Authorization = new[] { new HangfireAuthorizationFilter() },
+        DashboardTitle = "SentinelStack Background Jobs"
+    });
+
+    // Setup recurring jobs
+    RecurringJob.AddOrUpdate<EscalationJobService>(
+        "process-escalations",
+        service => service.ProcessPendingEscalationsAsync(),
+        "*/5 * * * *", // Every 5 minutes
+        new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 
     Log.Information("SentinelStack API started successfully");
     app.Run();
