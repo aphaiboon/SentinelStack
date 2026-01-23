@@ -1,8 +1,18 @@
+using System.Text;
 using Asp.Versioning;
 using HealthChecks.NpgSql;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Serilog;
 using Serilog.Events;
+using SentinelStack.Application.Auth.Interfaces;
+using SentinelStack.Application.Common.Interfaces;
+using SentinelStack.Infrastructure.Auth;
+using SentinelStack.Infrastructure.Data;
+using SentinelStack.Infrastructure.Repositories;
+using SentinelStack.Infrastructure.Services;
 
 // Configure Serilog early for startup logging
 Log.Logger = new LoggerConfiguration()
@@ -40,11 +50,61 @@ try
             new HeaderApiVersionReader("X-Api-Version"));
     });
 
+    // JWT Authentication
+    var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+    builder.Services.Configure<JwtSettings>(jwtSettings);
+
+    var secret = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret is required");
+    var key = Encoding.UTF8.GetBytes(secret);
+
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidateAudience = true,
+            ValidAudience = jwtSettings["Audience"],
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+    builder.Services.AddAuthorization();
+
+    // Database Context
+    var connectionString = builder.Configuration.GetValue<string>("DatabaseSettings:ConnectionString")
+        ?? throw new InvalidOperationException("Database connection string is required");
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(connectionString));
+
+    // Register Services
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+    builder.Services.AddScoped<ICurrentTenantService, CurrentTenantService>();
+    builder.Services.AddScoped<IDateTimeProvider, DateTimeProvider>();
+    builder.Services.AddScoped<ITokenService, TokenService>();
+    builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+    // Repositories
+    builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
+    builder.Services.AddScoped<IUserRepository, UserRepository>();
+    builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
+    builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
+
     // Health Checks
-    var connectionString = builder.Configuration.GetValue<string>("DatabaseSettings:ConnectionString");
     builder.Services.AddHealthChecks()
         .AddNpgSql(
-            connectionString ?? "Host=localhost;Database=sentinelstack",
+            connectionString,
             name: "postgresql",
             tags: new[] { "db", "sql", "postgresql" });
 
@@ -79,6 +139,9 @@ try
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "SentinelStack API V1");
         c.RoutePrefix = "swagger";
     });
+
+    app.UseAuthentication();
+    app.UseAuthorization();
 
     // Health check endpoints
     app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
