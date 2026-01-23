@@ -40,6 +40,11 @@ public class Incident : AuditableEntity, ITenantEntity
     public Guid? ServiceId { get; private set; }
 
     /// <summary>
+    /// The user assigned to handle this incident.
+    /// </summary>
+    public Guid? AssignedToId { get; private set; }
+
+    /// <summary>
     /// The user who acknowledged this incident.
     /// </summary>
     public Guid? AcknowledgedBy { get; private set; }
@@ -80,15 +85,17 @@ public class Incident : AuditableEntity, ITenantEntity
     public Incident(
         Guid tenantId,
         string title,
-        string description,
         IncidentSeverity severity,
-        Guid? serviceId = null)
+        string? description = null,
+        Guid? serviceId = null,
+        Guid? assignedToId = null)
     {
         TenantId = tenantId;
         Title = title;
-        Description = description;
+        Description = description ?? string.Empty;
         Severity = severity;
         ServiceId = serviceId;
+        AssignedToId = assignedToId;
         Status = IncidentStatus.Open;
     }
 
@@ -153,12 +160,30 @@ public class Incident : AuditableEntity, ITenantEntity
     }
 
     /// <summary>
+    /// Updates the incident title.
+    /// </summary>
+    public void UpdateTitle(string title, Guid userId)
+    {
+        Title = title;
+        SetUpdatedBy(userId);
+    }
+
+    /// <summary>
     /// Updates the incident description.
     /// </summary>
     public void UpdateDescription(string description, Guid userId)
     {
         Description = description;
         SetUpdatedBy(userId);
+    }
+
+    /// <summary>
+    /// Assigns the incident to a user.
+    /// </summary>
+    public void Assign(Guid? userId, Guid updatedByUserId)
+    {
+        AssignedToId = userId;
+        SetUpdatedBy(updatedByUserId);
     }
 
     /// <summary>

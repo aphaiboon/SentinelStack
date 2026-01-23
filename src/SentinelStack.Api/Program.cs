@@ -9,6 +9,8 @@ using Serilog;
 using Serilog.Events;
 using SentinelStack.Application.Auth.Interfaces;
 using SentinelStack.Application.Common.Interfaces;
+using SentinelStack.Application.Incidents.Commands;
+using SentinelStack.Application.Incidents.Queries;
 using SentinelStack.Infrastructure.Auth;
 using SentinelStack.Infrastructure.Data;
 using SentinelStack.Infrastructure.Repositories;
@@ -100,6 +102,14 @@ try
     builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
     builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
+
+    // Incident Commands & Queries
+    builder.Services.AddScoped<CreateIncidentCommand>();
+    builder.Services.AddScoped<UpdateIncidentCommand>();
+    builder.Services.AddScoped<AcknowledgeIncidentCommand>();
+    builder.Services.AddScoped<ResolveIncidentCommand>();
+    builder.Services.AddScoped<GetIncidentQuery>();
+    builder.Services.AddScoped<GetIncidentsQuery>();
 
     // Health Checks
     builder.Services.AddHealthChecks()
