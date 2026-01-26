@@ -1,7 +1,9 @@
 using System.Text;
 using Amazon;
+using Amazon.CloudWatchLogs;
 using Amazon.SecretsManager;
 using Asp.Versioning;
+using Serilog.Formatting.Compact;
 using HealthChecks.NpgSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Serilog;
 using Serilog.Events;
+using Serilog.Sinks.AwsCloudWatch;
 using SentinelStack.Application.Auth.Interfaces;
 using SentinelStack.Application.Common.Interfaces;
 using SentinelStack.Application.Incidents.Commands;
@@ -67,13 +70,53 @@ try
     }
 
     // Configure Serilog from appsettings
-    builder.Host.UseSerilog((context, services, configuration) => configuration
-        .ReadFrom.Configuration(context.Configuration)
-        .ReadFrom.Services(services)
-        .Enrich.FromLogContext()
-        .Enrich.WithMachineName()
-        .Enrich.WithEnvironmentName()
-        .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}"));
+    builder.Host.UseSerilog((context, services, configuration) =>
+    {
+        var logConfig = configuration
+            .ReadFrom.Configuration(context.Configuration)
+            .ReadFrom.Services(services)
+            .Enrich.FromLogContext()
+            .Enrich.WithMachineName()
+            .Enrich.WithEnvironmentName()
+            .Enrich.WithThreadId();
+
+        // Add custom enrichers for tenant/user context (from Infrastructure layer)
+        logConfig.Enrich.With(new SentinelStack.Infrastructure.Logging.TenantEnricher(
+            services.GetRequiredService<ICurrentTenantService>()));
+        logConfig.Enrich.With(new SentinelStack.Infrastructure.Logging.UserEnricher(
+            services.GetRequiredService<ICurrentUserService>()));
+
+        // Console sink for all environments (structured output)
+        logConfig.WriteTo.Console(
+            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}");
+
+        // CloudWatch sink only in production/staging
+        if (!context.HostingEnvironment.IsDevelopment() && !context.HostingEnvironment.IsEnvironment("Testing"))
+        {
+            var logGroupName = $"/ecs/sentinelstack-{context.HostingEnvironment.EnvironmentName.ToLowerInvariant()}";
+            var logStreamPrefix = context.HostingEnvironment.ApplicationName;
+
+            Log.Information("Configuring CloudWatch logging to {LogGroup} with stream prefix {LogStreamPrefix}",
+                logGroupName, logStreamPrefix);
+
+            var cloudWatchClient = new AmazonCloudWatchLogsClient(RegionEndpoint.USEast1);
+
+            var options = new CloudWatchSinkOptions
+            {
+                LogGroupName = logGroupName,
+                LogStreamNameProvider = new DefaultLogStreamProvider(),
+                TextFormatter = new CompactJsonFormatter(),
+                MinimumLogEventLevel = LogEventLevel.Information,
+                BatchSizeLimit = 100,
+                QueueSizeLimit = 10000,
+                Period = TimeSpan.FromSeconds(10),
+                CreateLogGroup = false, // Terraform already created the log group
+                LogGroupRetentionPolicy = LogGroupRetentionPolicy.OneMonth
+            };
+
+            logConfig.WriteTo.AmazonCloudWatch(options, cloudWatchClient);
+        }
+    });
 
     // API Versioning
     builder.Services.AddApiVersioning(options =>
