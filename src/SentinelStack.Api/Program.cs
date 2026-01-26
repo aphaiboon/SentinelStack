@@ -13,6 +13,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using SentinelStack.Api.Infrastructure;
 using SentinelStack.Api.Middleware;
+using Sustainsys.Saml2;
+using Sustainsys.Saml2.AspNetCore2;
+using Sustainsys.Saml2.Metadata;
 using SentinelStack.Application.AuditLogs.Queries;
 using SentinelStack.Application.Auth.Interfaces;
 using SentinelStack.Application.Common.Interfaces;
@@ -172,6 +175,24 @@ try
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
         };
+    })
+    .AddSaml2(options =>
+    {
+        // Service Provider configuration (AC #1)
+        options.SPOptions.EntityId = new EntityId("https://api.sentinelstack.io/saml");
+
+        // Return URL after successful SAML authentication
+        var baseUrl = builder.Configuration["Application:BaseUrl"] ?? "https://api.sentinelstack.io";
+        options.SPOptions.ReturnUrl = new Uri($"{baseUrl}/auth/saml/callback");
+
+        // Assertion Consumer Service (ACS) endpoint will be at /Saml2/Acs
+        // This is automatically configured by Sustainsys.Saml2
+
+        // Dynamic IdP configuration will be loaded per-tenant in middleware (Task 4)
+        // IdPs are not configured here - they're loaded dynamically based on tenant
+
+        // Note: IdP-initiated SSO support is enabled by default in Sustainsys.Saml2 v2.11.0
+        // Both SP-initiated and IdP-initiated flows are supported (AC #1)
     });
 
     builder.Services.AddAuthorization();
@@ -212,6 +233,7 @@ try
 
     // Repositories
     builder.Services.AddScoped<ITenantRepository, TenantRepository>();
+    builder.Services.AddScoped<ISamlConfigurationRepository, SamlConfigurationRepository>();
     builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
     builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
@@ -227,6 +249,12 @@ try
     builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
     builder.Services.AddScoped<IEmailService, EmailService>();
     builder.Services.AddScoped<INotificationService, NotificationService>();
+
+    // SAML Services
+    builder.Services.AddScoped<ISamlMetadataParser, SamlMetadataParser>();
+    builder.Services.AddScoped<ISamlIdpConfigurationService, SamlIdpConfigurationService>();
+    builder.Services.AddScoped<SamlAuthenticationHandler>();
+    builder.Services.AddScoped<DynamicSamlOptionsProvider>();
 
     // Tenant Commands & Queries
     builder.Services.AddScoped<SentinelStack.Application.Tenants.Commands.CreateTenantCommand>();

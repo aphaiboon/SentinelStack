@@ -28,6 +28,7 @@
     <ProjectReference Include="..\..\src\SentinelStack.Application\SentinelStack.Application.csproj" />
     <ProjectReference Include="..\..\src\SentinelStack.Domain\SentinelStack.Domain.csproj" />
     <ProjectReference Include="..\..\src\SentinelStack.Infrastructure\SentinelStack.Infrastructure.csproj" />
+    <ProjectReference Include="..\SentinelStack.Domain.UnitTests\SentinelStack.Domain.UnitTests.csproj" />
   </ItemGroup>
 
 </Project>

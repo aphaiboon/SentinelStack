@@ -141,4 +141,12 @@ public abstract class BaseIntegrationTest : IAsyncLifetime
     {
         return await Client.DeleteAsync(url);
     }
+
+    protected async Task SeedTenant(Tenant tenant)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        context.Tenants.Add(tenant);
+        await context.SaveChangesAsync();
+    }
 }

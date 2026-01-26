@@ -32,6 +32,7 @@ public class AppDbContext : DbContext, IUnitOfWork
     }
 
     public DbSet<Tenant> Tenants => Set<Tenant>();
+    public DbSet<SamlConfiguration> SamlConfigurations => Set<SamlConfiguration>();
     public DbSet<Incident> Incidents => Set<Incident>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Service> Services => Set<Service>();
