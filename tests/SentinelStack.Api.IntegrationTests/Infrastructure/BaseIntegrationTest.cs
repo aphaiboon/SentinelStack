@@ -112,6 +112,10 @@ public abstract class BaseIntegrationTest : IAsyncLifetime
             {
                 Client.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", result.AccessToken);
+
+                // Add X-Tenant-Id header required by TenantContextMiddleware
+                Client.DefaultRequestHeaders.Remove("X-Tenant-Id");
+                Client.DefaultRequestHeaders.Add("X-Tenant-Id", TestTenantId.ToString());
             }
         }
     }

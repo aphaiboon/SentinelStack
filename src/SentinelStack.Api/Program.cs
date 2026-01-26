@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using SentinelStack.Api.Infrastructure;
+using SentinelStack.Api.Middleware;
 using SentinelStack.Application.AuditLogs.Queries;
 using SentinelStack.Application.Auth.Interfaces;
 using SentinelStack.Application.Common.Interfaces;
@@ -206,6 +207,9 @@ try
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
+    // Middleware
+    builder.Services.AddScoped<TenantContextMiddleware>();
+
     // Repositories
     builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
     builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -357,6 +361,7 @@ try
     });
 
     app.UseAuthentication();
+    app.UseMiddleware<TenantContextMiddleware>();
     app.UseAuthorization();
 
     // Health check endpoints

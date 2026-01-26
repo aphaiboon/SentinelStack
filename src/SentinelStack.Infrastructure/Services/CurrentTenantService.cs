@@ -19,18 +19,11 @@ public class CurrentTenantService : ICurrentTenantService
     {
         get
         {
-            // First try to get from JWT claims
-            var tenantIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("tenant_id");
-            if (tenantIdClaim != null && Guid.TryParse(tenantIdClaim.Value, out var tenantId))
+            // Read from validated context (populated by TenantContextMiddleware)
+            // Middleware validates X-Tenant-Id header against JWT tenantIds claim
+            if (_httpContextAccessor.HttpContext?.Items.TryGetValue("TenantId", out var tenantId) == true)
             {
-                return tenantId;
-            }
-
-            // Fallback to header (for API key auth scenarios)
-            var headerValue = _httpContextAccessor.HttpContext?.Request.Headers["X-Tenant-Id"].FirstOrDefault();
-            if (!string.IsNullOrEmpty(headerValue) && Guid.TryParse(headerValue, out var headerTenantId))
-            {
-                return headerTenantId;
+                return (Guid?)tenantId;
             }
 
             return null;

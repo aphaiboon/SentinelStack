@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SentinelStack.Application.Auth.Interfaces;
@@ -32,12 +33,17 @@ public class TokenService : ITokenService
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+        // For multi-tenant support, tenantIds is a JSON array of allowed tenant GUIDs
+        // Currently users belong to one tenant, so array has one element
+        var tenantIds = JsonSerializer.Serialize(new[] { user.TenantId.ToString() });
+
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new("tenant_id", user.TenantId.ToString()),
+            new("tenant_id", user.TenantId.ToString()), // Legacy claim for backward compatibility
+            new("tenantIds", tenantIds), // Multi-tenant claim (JSON array)
             new(ClaimTypes.Role, user.Role.ToString()),
             new("display_name", user.DisplayName)
         };
