@@ -31,6 +31,7 @@ public class AppDbContext : DbContext, IUnitOfWork
         _dateTimeProvider = dateTimeProvider;
     }
 
+    public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<Incident> Incidents => Set<Incident>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Service> Services => Set<Service>();

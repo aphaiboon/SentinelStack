@@ -211,6 +211,7 @@ try
     builder.Services.AddScoped<TenantContextMiddleware>();
 
     // Repositories
+    builder.Services.AddScoped<ITenantRepository, TenantRepository>();
     builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
     builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
@@ -226,6 +227,11 @@ try
     builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
     builder.Services.AddScoped<IEmailService, EmailService>();
     builder.Services.AddScoped<INotificationService, NotificationService>();
+
+    // Tenant Commands & Queries
+    builder.Services.AddScoped<SentinelStack.Application.Tenants.Commands.CreateTenantCommand>();
+    builder.Services.AddScoped<SentinelStack.Application.Tenants.Queries.GetTenantsQuery>();
+    builder.Services.AddScoped<SentinelStack.Application.Tenants.Queries.GetTenantBySubdomainQuery>();
 
     // Incident Commands & Queries
     builder.Services.AddScoped<CreateIncidentCommand>();
