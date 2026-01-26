@@ -201,7 +201,10 @@ public class AuditService : IAuditService
     private string? GetClientIpAddress()
     {
         var context = _httpContextAccessor.HttpContext;
-        if (context == null) return null;
+        if (context == null)
+        {
+            return null;
+        }
 
         // Check for forwarded headers first (for load balancers/proxies)
         var forwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();

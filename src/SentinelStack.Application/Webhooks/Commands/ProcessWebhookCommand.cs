@@ -166,7 +166,9 @@ public class ProcessWebhookCommand
     private static string? ExtractValue(JsonElement root, string? jsonPath)
     {
         if (string.IsNullOrEmpty(jsonPath))
+        {
             return null;
+        }
 
         try
         {
@@ -203,19 +205,32 @@ public class ProcessWebhookCommand
     private static IncidentSeverity ParseSeverity(string? severityStr, WebhookSourceType sourceType, IncidentSeverity defaultSeverity)
     {
         if (string.IsNullOrEmpty(severityStr))
+        {
             return defaultSeverity;
+        }
 
         var lower = severityStr.ToLowerInvariant();
 
         // Standard severity names
         if (lower.Contains("critical") || lower.Contains("p1") || lower == "1")
+        {
             return IncidentSeverity.Critical;
+        }
+
         if (lower.Contains("high") || lower.Contains("p2") || lower == "2")
+        {
             return IncidentSeverity.High;
+        }
+
         if (lower.Contains("medium") || lower.Contains("p3") || lower == "3" || lower.Contains("warning"))
+        {
             return IncidentSeverity.Medium;
+        }
+
         if (lower.Contains("low") || lower.Contains("p4") || lower == "4" || lower.Contains("info"))
+        {
             return IncidentSeverity.Low;
+        }
 
         // Source-specific mappings
         return sourceType switch

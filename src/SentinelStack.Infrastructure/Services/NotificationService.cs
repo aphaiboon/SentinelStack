@@ -181,13 +181,21 @@ public class NotificationService : INotificationService
     private static string CalculateDuration(Incident incident)
     {
         if (incident.ResolvedAtUtc == null)
+        {
             return "Ongoing";
+        }
 
         var duration = incident.ResolvedAtUtc.Value - incident.CreatedAtUtc;
         if (duration.TotalMinutes < 60)
+        {
             return $"{(int)duration.TotalMinutes} minutes";
+        }
+
         if (duration.TotalHours < 24)
+        {
             return $"{(int)duration.TotalHours} hours";
+        }
+
         return $"{(int)duration.TotalDays} days";
     }
 }

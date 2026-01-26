@@ -4,9 +4,9 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using SentinelStack.Api.IntegrationTests.Infrastructure;
 using SentinelStack.Application.Auth.DTOs;
+using SentinelStack.Application.Auth.Interfaces;
 using SentinelStack.Domain.Entities;
 using SentinelStack.Domain.Enums;
-using SentinelStack.Application.Auth.Interfaces;
 using SentinelStack.Infrastructure.Data;
 
 namespace SentinelStack.Api.IntegrationTests.Controllers;

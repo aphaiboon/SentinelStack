@@ -3,10 +3,10 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using SentinelStack.Application.Auth.DTOs;
+using SentinelStack.Application.Auth.Interfaces;
 using SentinelStack.Application.Users.DTOs;
 using SentinelStack.Domain.Entities;
 using SentinelStack.Domain.Enums;
-using SentinelStack.Application.Auth.Interfaces;
 using SentinelStack.Infrastructure.Data;
 
 namespace SentinelStack.Api.IntegrationTests.Infrastructure;

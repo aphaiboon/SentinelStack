@@ -1,6 +1,6 @@
+using SentinelStack.Application.Common.Interfaces;
 using Serilog.Core;
 using Serilog.Events;
-using SentinelStack.Application.Common.Interfaces;
 
 namespace SentinelStack.Infrastructure.Logging;
 

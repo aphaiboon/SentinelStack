@@ -1,6 +1,6 @@
+using System.Diagnostics;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 
 namespace SentinelStack.Api.Controllers;
 

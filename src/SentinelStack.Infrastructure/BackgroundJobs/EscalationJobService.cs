@@ -158,9 +158,15 @@ public class EscalationJobService
     private static string FormatDuration(TimeSpan duration)
     {
         if (duration.TotalMinutes < 60)
+        {
             return $"{(int)duration.TotalMinutes} minutes";
+        }
+
         if (duration.TotalHours < 24)
+        {
             return $"{(int)duration.TotalHours} hours";
+        }
+
         return $"{(int)duration.TotalDays} days";
     }
 }
