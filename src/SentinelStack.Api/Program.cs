@@ -1,4 +1,6 @@
 using System.Text;
+using Amazon;
+using Amazon.SecretsManager;
 using Asp.Versioning;
 using HealthChecks.NpgSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -47,6 +49,22 @@ try
     Log.Information("Starting SentinelStack API");
 
     var builder = WebApplication.CreateBuilder(args);
+
+    // Configure Secrets Provider (environment-based)
+    if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"))
+    {
+        // Development/Testing: Use user-secrets and appsettings
+        builder.Services.AddScoped<ISecretsProvider, UserSecretsProvider>();
+        Log.Information("Using UserSecretsProvider for development/testing environment");
+    }
+    else
+    {
+        // Production: Use AWS Secrets Manager
+        builder.Services.AddSingleton<IAmazonSecretsManager>(sp =>
+            new AmazonSecretsManagerClient(RegionEndpoint.USEast1));
+        builder.Services.AddScoped<ISecretsProvider, AwsSecretsManagerProvider>();
+        Log.Information("Using AWS Secrets Manager for production environment");
+    }
 
     // Configure Serilog from appsettings
     builder.Host.UseSerilog((context, services, configuration) => configuration
@@ -243,6 +261,39 @@ try
     });
 
     var app = builder.Build();
+
+    // Fail-fast validation for required secrets (production only)
+    if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Testing"))
+    {
+        Log.Information("Validating required secrets from AWS Secrets Manager...");
+        using var scope = app.Services.CreateScope();
+        var secretsProvider = scope.ServiceProvider.GetRequiredService<ISecretsProvider>();
+
+        var requiredSecrets = new[]
+        {
+            "sentinelstack-db-connection",
+            "sentinelstack-jwt-secret",
+            "sentinelstack-hangfire-password"
+        };
+
+        foreach (var secretName in requiredSecrets)
+        {
+            try
+            {
+                _ = await secretsProvider.GetSecretAsync(secretName);
+                Log.Information("✓ Secret '{SecretName}' validated successfully", secretName);
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "✗ Required secret '{SecretName}' is missing or inaccessible", secretName);
+                throw new InvalidOperationException(
+                    $"Required secret '{secretName}' not found in AWS Secrets Manager. " +
+                    "Ensure all secrets are created and IAM permissions are configured.", ex);
+            }
+        }
+
+        Log.Information("All required secrets validated successfully");
+    }
 
     // Request logging middleware
     app.UseSerilogRequestLogging(options =>
