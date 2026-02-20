@@ -82,3 +82,4 @@ crash.*.log
 _bmad/
 _bmad-output/
 .mcp.json
+CLAUDE.md
