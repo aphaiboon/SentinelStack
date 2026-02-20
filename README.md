@@ -16,10 +16,32 @@
 
 #
 
-SentinelStack is an open-source, healthcare-ready incident management platform built on .NET 10 Clean Architecture. It provides multi-tenant incident tracking, service registry, escalation workflows, webhook ingestion, SAML SSO, and immutable audit trails — designed for regulated environments where compliance and accountability are non-negotiable.
+SentinelStack is an open-source **backend API engine** for incident management in regulated environments. It handles multi-tenant incident tracking, service registry, escalation workflows, webhook ingestion, SAML SSO, and immutable audit trails — and exposes all of it over a REST API that your own frontend, CLI, or tooling calls.
+
+There is no bundled UI. This is intentional. SentinelStack is the engine you build on top of.
 
 > **TL;DR**  
-> A production-ready, HIPAA-conscious incident management API with full multi-tenancy, role-based access control, escalation policies, and audit-first design — targeting AWS ECS + PostgreSQL.
+> A production-ready, HIPAA-conscious incident management REST API. Bring your own frontend. Deploy on AWS ECS + PostgreSQL.
+
+---
+
+## How It Works
+
+SentinelStack sits in the middle of your ops stack and connects three things:
+
+```
+Monitoring tools          SentinelStack API          Your tooling
+─────────────────         ─────────────────          ──────────────
+Datadog          ──POST──▶ Webhook Ingest   ◀──────▶ Your dashboard
+PagerDuty        ──POST──▶ → creates        ◀──────▶ Your CLI
+Prometheus       ──POST──▶   Incident       ◀──────▶ Your Slack bot
+Custom alerts    ──POST──▶                  ◀──────▶ Postman / curl
+```
+
+1. **Monitoring tools push alerts in** via `POST /api/v1/webhooks/ingest/{key}`. SentinelStack validates the signature and creates an incident automatically.
+2. **Your team responds** via whatever client you build or use — a web dashboard, a Slack bot, a CLI. They call the API to acknowledge, investigate, and resolve incidents.
+3. **Escalation policies run in the background.** If an incident isn't acknowledged within a configured time window, Hangfire fires escalation steps and sends notifications (email, SMS, Slack) up the chain.
+4. **Every action is captured.** The audit log records who did what, when, from where — immutably. Compliance teams query it directly via the API.
 
 ---
 
@@ -162,7 +184,7 @@ dotnet ef database update
 dotnet run
 ```
 
-The API starts at `http://localhost:5000`. Swagger UI is available at `http://localhost:5000/swagger`.
+The API starts at `http://localhost:5000`. Use `http://localhost:5000/swagger` to browse and test all endpoints interactively — useful for exploring the API before building a client against it.
 
 ### Configuration
 
@@ -233,8 +255,13 @@ terraform apply
 
 ## Roadmap
 
+**API engine (this repo):**
 - On-call schedule management
-- Slack / PagerDuty integrations
-- Advanced analytics and SLA tracking
-- Mobile push notifications
-- ML-assisted anomaly detection
+- Slack / PagerDuty native integrations
+- Advanced analytics and SLA tracking endpoints
+- Mobile push notification support
+
+**Planned companion projects:**
+- Web dashboard (frontend UI for incident management)
+- CLI tool for ops engineers
+- Slack app for on-call workflows
