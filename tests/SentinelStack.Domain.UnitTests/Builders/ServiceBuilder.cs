@@ -17,7 +17,7 @@ public class ServiceBuilder
     private string? _slackChannel;
     private bool _isActive = true;
 
-    private static readonly Faker Faker = new();
+    private static readonly Faker _faker = new();
 
     /// <summary>
     /// Creates a new ServiceBuilder with default values.
@@ -93,9 +93,9 @@ public class ServiceBuilder
     /// </summary>
     public Service Build()
     {
-        var name = _name ?? Faker.Commerce.ProductName();
-        var serviceKey = _serviceKey ?? Faker.Lorem.Slug();
-        var description = _description ?? Faker.Lorem.Sentence();
+        var name = _name ?? _faker.Commerce.ProductName();
+        var serviceKey = _serviceKey ?? _faker.Lorem.Slug();
+        var description = _description ?? _faker.Lorem.Sentence();
 
         var service = new Service(
             tenantId: _tenantId,

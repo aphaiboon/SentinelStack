@@ -11,9 +11,9 @@ namespace SentinelStack.Api.IntegrationTests.Infrastructure;
 /// </summary>
 public static class JwtTokenGenerator
 {
-    private const string TestSecret = "TestSecretKeyThatIsAtLeast32CharactersLongForHMACSHA256";
-    private const string TestIssuer = "SentinelStack.Tests";
-    private const string TestAudience = "SentinelStack.Tests";
+    private const string _testSecret = "_testSecretKeyThatIsAtLeast32CharactersLongForHMACSHA256";
+    private const string _testIssuer = "SentinelStack.Tests";
+    private const string _testAudience = "SentinelStack.Tests";
 
     /// <summary>
     /// Generates a JWT token with the specified claims.
@@ -31,7 +31,7 @@ public static class JwtTokenGenerator
         string? role = null,
         int expiresInMinutes = 60)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TestSecret));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_testSecret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new List<Claim>
@@ -52,8 +52,8 @@ public static class JwtTokenGenerator
         }
 
         var token = new JwtSecurityToken(
-            issuer: TestIssuer,
-            audience: TestAudience,
+            issuer: _testIssuer,
+            audience: _testAudience,
             claims: claims,
             expires: DateTime.UtcNow.AddMinutes(expiresInMinutes),
             signingCredentials: credentials

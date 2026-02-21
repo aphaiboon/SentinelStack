@@ -21,7 +21,7 @@ public class EscalationStepBuilder
     private int? _repeatIntervalMinutes;
     private int? _maxRepeats;
 
-    private static readonly Faker Faker = new();
+    private static readonly Faker _faker = new();
 
     /// <summary>
     /// Creates a new EscalationStepBuilder with default values.

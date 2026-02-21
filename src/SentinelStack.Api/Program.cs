@@ -13,9 +13,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using SentinelStack.Api.Infrastructure;
 using SentinelStack.Api.Middleware;
-using Sustainsys.Saml2;
-using Sustainsys.Saml2.AspNetCore2;
-using Sustainsys.Saml2.Metadata;
 using SentinelStack.Application.AuditLogs.Queries;
 using SentinelStack.Application.Auth.Interfaces;
 using SentinelStack.Application.Common.Interfaces;
@@ -39,6 +36,9 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
 using Serilog.Sinks.AwsCloudWatch;
+using Sustainsys.Saml2;
+using Sustainsys.Saml2.AspNetCore2;
+using Sustainsys.Saml2.Metadata;
 
 // Configure Serilog early for startup logging
 // Use CreateLogger instead of CreateBootstrapLogger to avoid "logger already frozen" error with WebApplicationFactory
@@ -84,11 +84,8 @@ try
             .Enrich.WithEnvironmentName()
             .Enrich.WithThreadId();
 
-        // Add custom enrichers for tenant/user context (from Infrastructure layer)
-        logConfig.Enrich.With(new SentinelStack.Infrastructure.Logging.TenantEnricher(
-            services.GetRequiredService<ICurrentTenantService>()));
-        logConfig.Enrich.With(new SentinelStack.Infrastructure.Logging.UserEnricher(
-            services.GetRequiredService<ICurrentUserService>()));
+        // TenantId, UserId, and CorrelationId are pushed via LogContext in middleware
+        // (not via singleton enrichers — those can't hold scoped service references)
 
         // Console sink for all environments (structured output)
         logConfig.WriteTo.Console(
@@ -397,6 +394,22 @@ try
     app.UseAuthentication();
     app.UseMiddleware<TenantContextMiddleware>();
     app.UseAuthorization();
+
+    // Push structured log properties per-request (CorrelationId, TenantId, UserId)
+    // Uses LogContext so all log events during the request include these properties
+    app.Use(async (context, next) =>
+    {
+        var correlationId = context.TraceIdentifier;
+        var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
+        var tenantId = context.Items.TryGetValue("TenantId", out var tid) ? tid?.ToString() ?? "" : "";
+
+        using (Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId))
+        using (Serilog.Context.LogContext.PushProperty("UserId", userId))
+        using (Serilog.Context.LogContext.PushProperty("TenantId", tenantId))
+        {
+            await next(context);
+        }
+    });
 
     // Health check endpoints
     app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions

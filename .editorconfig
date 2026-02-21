@@ -22,7 +22,9 @@ indent_size = 2
 csharp_style_namespace_declarations = file_scoped:error
 
 ## AR42: LINQ method syntax only (no query syntax)
-csharp_prefer_simple_using_statement = true:suggestion
+# NOTE: Roslyn has no built-in analyzer to ban LINQ query syntax (from..select).
+# Enforce via code review. csharp_style_prefer_method_group_conversion encourages
+# method-syntax patterns but does not block query syntax.
 csharp_style_prefer_method_group_conversion = true:suggestion
 
 ## AR61: Code organization
@@ -71,7 +73,9 @@ dotnet_naming_style.pascal_case.required_suffix =
 dotnet_naming_style.pascal_case.word_separator =
 dotnet_naming_style.pascal_case.capitalization = pascal_case
 
-### Methods: PascalCase (AR35: Async suffix enforced by analyzers)
+### Methods: PascalCase
+# AR35: Async suffix convention requires a third-party analyzer (e.g. Roslynator
+# RCS1046) or code review. Roslyn's built-in naming rules cannot enforce suffixes.
 dotnet_naming_rule.methods_should_be_pascal_case.severity = error
 dotnet_naming_rule.methods_should_be_pascal_case.symbols = method
 dotnet_naming_rule.methods_should_be_pascal_case.style = pascal_case

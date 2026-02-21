@@ -17,7 +17,7 @@ public class AuditService : IAuditService
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IUnitOfWork _unitOfWork;
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions _jsonOptions = new()
     {
         WriteIndented = false,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -230,7 +230,7 @@ public class AuditService : IAuditService
     {
         try
         {
-            return JsonSerializer.Serialize(entity, JsonOptions);
+            return JsonSerializer.Serialize(entity, _jsonOptions);
         }
         catch
         {

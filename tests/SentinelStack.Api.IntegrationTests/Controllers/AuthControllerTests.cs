@@ -19,7 +19,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>, I
     private Guid _testTenantId;
     private Guid _testUserId;
     private string _testEmail = null!;
-    private const string TestPassword = "TestPassword@123!";
+    private const string _testPassword = "_testPassword@123!";
 
     public AuthControllerTests(CustomWebApplicationFactory factory)
     {
@@ -43,7 +43,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>, I
             _testTenantId,
             _testEmail,
             "Auth Test User",
-            passwordHasher.HashPassword(TestPassword),
+            passwordHasher.HashPassword(_testPassword),
             UserRole.Admin);
 
         typeof(User).GetProperty("Id")!.SetValue(user, Guid.NewGuid());
@@ -71,7 +71,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>, I
         var request = new LoginRequest
         {
             Email = _testEmail,
-            Password = TestPassword
+            Password = _testPassword
         };
 
         // Act
@@ -93,7 +93,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>, I
         var request = new LoginRequest
         {
             Email = "nonexistent@sentinelstack.io",
-            Password = TestPassword
+            Password = _testPassword
         };
 
         // Act
@@ -127,7 +127,7 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>, I
         var loginRequest = new LoginRequest
         {
             Email = _testEmail,
-            Password = TestPassword
+            Password = _testPassword
         };
         var loginResponse = await _client.PostAsJsonAsync("/api/v1/auth/login", loginRequest);
         var tokens = await loginResponse.Content.ReadFromJsonAsync<TokenResponse>();

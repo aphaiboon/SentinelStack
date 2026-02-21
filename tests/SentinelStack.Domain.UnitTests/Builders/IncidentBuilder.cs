@@ -19,7 +19,7 @@ public class IncidentBuilder
     private Guid? _acknowledgedBy;
     private Guid? _resolvedBy;
 
-    private static readonly Faker Faker = new();
+    private static readonly Faker _faker = new();
 
     /// <summary>
     /// Creates a new IncidentBuilder with default values.
@@ -114,8 +114,8 @@ public class IncidentBuilder
     /// </summary>
     public Incident Build()
     {
-        var title = _title ?? Faker.Company.CatchPhrase();
-        var description = _description ?? Faker.Lorem.Paragraph();
+        var title = _title ?? _faker.Company.CatchPhrase();
+        var description = _description ?? _faker.Lorem.Paragraph();
 
         var incident = new Incident(
             tenantId: _tenantId,

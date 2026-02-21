@@ -16,7 +16,7 @@ public class EscalationPolicyBuilder
     private bool _isActive = true;
     private readonly List<EscalationStep> _steps = new();
 
-    private static readonly Faker Faker = new();
+    private static readonly Faker _faker = new();
 
     /// <summary>
     /// Creates a new EscalationPolicyBuilder with default values.
@@ -100,8 +100,8 @@ public class EscalationPolicyBuilder
     /// </summary>
     public EscalationPolicy Build()
     {
-        var name = _name ?? Faker.Company.CatchPhrase();
-        var description = _description ?? Faker.Lorem.Sentence();
+        var name = _name ?? _faker.Company.CatchPhrase();
+        var description = _description ?? _faker.Lorem.Sentence();
 
         var policy = new EscalationPolicy(
             tenantId: _tenantId,

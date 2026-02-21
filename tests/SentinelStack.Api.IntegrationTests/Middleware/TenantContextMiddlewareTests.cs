@@ -20,7 +20,7 @@ public class TenantContextMiddlewareTests
     private readonly JsonSerializerOptions _jsonOptions;
 
     // Use a protected endpoint for testing (not /health which is public)
-    private const string ProtectedEndpoint = "/api/v1/services";
+    private const string _protectedEndpoint = "/api/v1/services";
 
     public TenantContextMiddlewareTests(CustomWebApplicationFactory factory)
     {
@@ -44,7 +44,7 @@ public class TenantContextMiddlewareTests
         _client.DefaultRequestHeaders.Add("X-Tenant-Id", tenantId.ToString());
 
         // Act
-        var response = await _client.GetAsync(ProtectedEndpoint);
+        var response = await _client.GetAsync(_protectedEndpoint);
 
         // Assert
         // May return 200 (OK) or 404 (NotFound) depending on data, but should not be 400/403
@@ -64,7 +64,7 @@ public class TenantContextMiddlewareTests
         // No X-Tenant-Id header
 
         // Act
-        var response = await _client.GetAsync(ProtectedEndpoint);
+        var response = await _client.GetAsync(_protectedEndpoint);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -87,7 +87,7 @@ public class TenantContextMiddlewareTests
         _client.DefaultRequestHeaders.Add("X-Tenant-Id", "not-a-guid");
 
         // Act
-        var response = await _client.GetAsync(ProtectedEndpoint);
+        var response = await _client.GetAsync(_protectedEndpoint);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -115,7 +115,7 @@ public class TenantContextMiddlewareTests
         _client.DefaultRequestHeaders.Add("X-Tenant-Id", unauthorizedTenant.ToString()); // Not in allowed list
 
         // Act
-        var response = await _client.GetAsync(ProtectedEndpoint);
+        var response = await _client.GetAsync(_protectedEndpoint);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -143,7 +143,7 @@ public class TenantContextMiddlewareTests
         _client.DefaultRequestHeaders.Add("X-Tenant-Id", tenant2.ToString()); // Select tenant2 from allowed list
 
         // Act
-        var response = await _client.GetAsync(ProtectedEndpoint);
+        var response = await _client.GetAsync(_protectedEndpoint);
 
         // Assert
         // May return 200 (OK) or 404 (NotFound) depending on data, but should not be 400/403
@@ -165,7 +165,7 @@ public class TenantContextMiddlewareTests
         _client.DefaultRequestHeaders.Add("X-Tenant-Id", tenantId.ToString());
 
         // Act
-        var response = await _client.GetAsync(ProtectedEndpoint);
+        var response = await _client.GetAsync(_protectedEndpoint);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -186,7 +186,7 @@ public class TenantContextMiddlewareTests
         _client.DefaultRequestHeaders.Add("X-Tenant-Id", tenantId.ToString());
 
         // Act
-        var response = await _client.GetAsync(ProtectedEndpoint);
+        var response = await _client.GetAsync(_protectedEndpoint);
 
         // Assert
         // Without authentication, either:

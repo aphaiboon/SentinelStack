@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SentinelStack.Application.Common.Interfaces;
 using SentinelStack.Application.Tenants.Commands;
 using SentinelStack.Application.Tenants.DTOs;
 using SentinelStack.Application.Tenants.Queries;
@@ -8,50 +9,43 @@ using SentinelStack.Domain.Enums;
 namespace SentinelStack.Api.Controllers.Admin;
 
 /// <summary>
-/// Request DTO for creating a tenant.
-/// </summary>
-public record CreateTenantRequest
-{
-    public string Name { get; init; } = string.Empty;
-    public string Subdomain { get; init; } = string.Empty;
-    public TenantTier Tier { get; init; }
-}
-
-/// <summary>
 /// Admin endpoint for tenant management (FR67, FR68).
 /// Platform administrators only.
 /// </summary>
 [ApiController]
 [Route("admin/tenants")]
-[Authorize] // Future: Add [Authorize(Policy = "PlatformAdmin")] when RBAC is implemented
+[Authorize(Roles = "PlatformAdmin,Admin")]
 public class TenantsController : ControllerBase
 {
     private readonly CreateTenantCommand _createCommand;
     private readonly GetTenantsQuery _getTenantsQuery;
+    private readonly GetTenantBySubdomainQuery _getBySubdomainQuery;
+    private readonly ITenantRepository _tenantRepository;
     private readonly ILogger<TenantsController> _logger;
 
     public TenantsController(
         CreateTenantCommand createCommand,
         GetTenantsQuery getTenantsQuery,
+        GetTenantBySubdomainQuery getBySubdomainQuery,
+        ITenantRepository tenantRepository,
         ILogger<TenantsController> logger)
     {
         _createCommand = createCommand;
         _getTenantsQuery = getTenantsQuery;
+        _getBySubdomainQuery = getBySubdomainQuery;
+        _tenantRepository = tenantRepository;
         _logger = logger;
     }
 
     /// <summary>
     /// Creates a new tenant organization (AC #1).
-    /// </summary>
-    /// <remarks>
     /// AC #3, #4: Isolation model auto-set based on tier.
-    /// </remarks>
+    /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(TenantDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<TenantDto>> CreateTenant([FromBody] CreateTenantRequest request)
     {
-        // Map request to command
         _createCommand.Name = request.Name;
         _createCommand.Subdomain = request.Subdomain;
         _createCommand.Tier = request.Tier;
@@ -97,14 +91,115 @@ public class TenantsController : ControllerBase
     }
 
     /// <summary>
-    /// Gets tenant by ID (placeholder for CreatedAtAction route).
+    /// Gets tenant by ID (Task 5: GET /admin/tenants/{id}).
     /// </summary>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(TenantDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<TenantDto> GetTenant(Guid id)
+    public async Task<ActionResult<TenantDto>> GetTenant(Guid id)
     {
-        // Placeholder for now - will be implemented in future stories
-        return NotFound();
+        var tenant = await _tenantRepository.GetByIdAsync(id);
+
+        if (tenant == null)
+        {
+            return NotFound(new { error = $"Tenant with ID {id} not found" });
+        }
+
+        return Ok(new TenantDto
+        {
+            Id = tenant.Id,
+            Name = tenant.Name,
+            Subdomain = tenant.Subdomain,
+            Tier = tenant.Tier,
+            IsolationModel = tenant.IsolationModel,
+            Status = tenant.Status,
+            SchemaName = tenant.SchemaName,
+            CreatedAtUtc = tenant.CreatedAtUtc,
+            SuspendedAtUtc = tenant.SuspendedAtUtc,
+            UpdatedAtUtc = tenant.UpdatedAtUtc
+        });
+    }
+
+    /// <summary>
+    /// Updates tenant name (Task 5: PUT /admin/tenants/{id}).
+    /// </summary>
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof(TenantDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<TenantDto>> UpdateTenant(Guid id, [FromBody] UpdateTenantRequest request)
+    {
+        var tenant = await _tenantRepository.GetByIdAsync(id);
+
+        if (tenant == null)
+        {
+            return NotFound(new { error = $"Tenant with ID {id} not found" });
+        }
+
+        try
+        {
+            tenant.UpdateName(request.Name);
+            await _tenantRepository.UpdateAsync(tenant);
+
+            _logger.LogInformation("Tenant {TenantId} updated", id);
+
+            return Ok(new TenantDto
+            {
+                Id = tenant.Id,
+                Name = tenant.Name,
+                Subdomain = tenant.Subdomain,
+                Tier = tenant.Tier,
+                IsolationModel = tenant.IsolationModel,
+                Status = tenant.Status,
+                SchemaName = tenant.SchemaName,
+                CreatedAtUtc = tenant.CreatedAtUtc,
+                SuspendedAtUtc = tenant.SuspendedAtUtc,
+                UpdatedAtUtc = tenant.UpdatedAtUtc
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Suspends a tenant account (FR68).
+    /// </summary>
+    [HttpPost("{id}/suspend")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SuspendTenant(Guid id)
+    {
+        try
+        {
+            await _tenantRepository.SuspendAsync(id);
+            _logger.LogInformation("Tenant {TenantId} suspended", id);
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Activates a suspended tenant account.
+    /// </summary>
+    [HttpPost("{id}/activate")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ActivateTenant(Guid id)
+    {
+        try
+        {
+            await _tenantRepository.ActivateAsync(id);
+            _logger.LogInformation("Tenant {TenantId} activated", id);
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
     }
 }

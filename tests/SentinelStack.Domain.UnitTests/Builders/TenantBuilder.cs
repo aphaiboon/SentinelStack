@@ -14,7 +14,7 @@ public class TenantBuilder
     private TenantTier _tier = TenantTier.Free;
     private TenantStatus _status = TenantStatus.Active;
 
-    private static readonly Faker Faker = new();
+    private static readonly Faker _faker = new();
 
     public static TenantBuilder Default() => new();
 
@@ -44,8 +44,8 @@ public class TenantBuilder
 
     public Tenant Build()
     {
-        var name = _name ?? Faker.Company.CompanyName();
-        var subdomain = _subdomain ?? Faker.Internet.DomainWord();
+        var name = _name ?? _faker.Company.CompanyName();
+        var subdomain = _subdomain ?? _faker.Internet.DomainWord();
 
         var tenant = new Tenant(name, subdomain, _tier);
 

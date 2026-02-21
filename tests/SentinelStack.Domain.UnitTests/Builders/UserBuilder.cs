@@ -19,7 +19,7 @@ public class UserBuilder
     private bool _isActive = true;
     private bool _mfaEnabled = false;
 
-    private static readonly Faker Faker = new();
+    private static readonly Faker _faker = new();
 
     /// <summary>
     /// Creates a new UserBuilder with default values.
@@ -104,8 +104,8 @@ public class UserBuilder
     /// </summary>
     public User Build()
     {
-        var email = _email ?? Faker.Internet.Email();
-        var displayName = _displayName ?? Faker.Name.FullName();
+        var email = _email ?? _faker.Internet.Email();
+        var displayName = _displayName ?? _faker.Name.FullName();
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(_password);
 
         var user = new User(
@@ -121,8 +121,8 @@ public class UserBuilder
         {
             user.UpdateProfile(
                 displayName: displayName,
-                firstName: _firstName ?? Faker.Name.FirstName(),
-                lastName: _lastName ?? Faker.Name.LastName()
+                firstName: _firstName ?? _faker.Name.FirstName(),
+                lastName: _lastName ?? _faker.Name.LastName()
             );
         }
 

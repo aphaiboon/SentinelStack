@@ -15,7 +15,7 @@ namespace SentinelStack.Api.IntegrationTests.Admin;
 public class SamlConfigurationControllerTests : BaseIntegrationTest
 {
     // Minimal valid SAML metadata for testing
-    private const string ValidOktaMetadata = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+    private const string _validOktaMetadata = @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <EntityDescriptor entityID=""http://www.okta.com/exk123"" xmlns=""urn:oasis:names:tc:SAML:2.0:metadata"">
   <IDPSSODescriptor protocolSupportEnumeration=""urn:oasis:names:tc:SAML:2.0:protocol"">
     <KeyDescriptor use=""signing"">
@@ -44,7 +44,7 @@ public class SamlConfigurationControllerTests : BaseIntegrationTest
 
         var request = new
         {
-            IdpMetadataXml = ValidOktaMetadata
+            IdpMetadataXml = _validOktaMetadata
         };
 
         // Act
@@ -71,7 +71,7 @@ public class SamlConfigurationControllerTests : BaseIntegrationTest
 
         var request = new
         {
-            IdpMetadataXml = ValidOktaMetadata
+            IdpMetadataXml = _validOktaMetadata
         };
 
         // Act
@@ -114,7 +114,7 @@ public class SamlConfigurationControllerTests : BaseIntegrationTest
         // Configure SAML first
         await PostAsync($"/admin/tenants/{tenant.Id}/saml-config", new
         {
-            IdpMetadataXml = ValidOktaMetadata
+            IdpMetadataXml = _validOktaMetadata
         });
 
         // Act
@@ -139,7 +139,7 @@ public class SamlConfigurationControllerTests : BaseIntegrationTest
         // Configure SAML first
         await PostAsync($"/admin/tenants/{tenant.Id}/saml-config", new
         {
-            IdpMetadataXml = ValidOktaMetadata
+            IdpMetadataXml = _validOktaMetadata
         });
 
         // Act

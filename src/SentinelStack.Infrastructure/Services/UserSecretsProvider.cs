@@ -44,12 +44,14 @@ public class UserSecretsProvider : ISecretsProvider
             throw new ArgumentNullException(nameof(secretNames));
         }
 
-        var secrets = new Dictionary<string, string>();
+        var namesList = secretNames.ToList();
+        var tasks = namesList.Select(name => GetSecretAsync(name, cancellationToken));
+        var values = await Task.WhenAll(tasks);
 
-        foreach (var secretName in secretNames)
+        var secrets = new Dictionary<string, string>();
+        for (var i = 0; i < namesList.Count; i++)
         {
-            var value = await GetSecretAsync(secretName, cancellationToken);
-            secrets[secretName] = value;
+            secrets[namesList[i]] = values[i];
         }
 
         return secrets;
